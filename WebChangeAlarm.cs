@@ -39,7 +39,7 @@ namespace WebChangeAlarm
 
             if (args.Length != 1)
             {
-                Console.WriteLine("Please provide config.ini as parameter!");
+                Console.WriteLine("Please provide config.ini file as parameter!");
                 Console.WriteLine("Exiting application...");
                 return;
             }
@@ -59,8 +59,8 @@ namespace WebChangeAlarm
             }
 
 
-            if (cfm.EmailRecipentsSource == "url") LoadRecipientsFromWeb(cfm.EmailRecipents);
-            else LoadRecipients(cfm.EmailRecipents);
+            if (cfm.EmailRecipentsSourceType == "url") LoadRecipientsFromWeb(cfm.EmailRecipentsSource);
+            else LoadRecipients(cfm.EmailRecipentsSource);
 
 
             if (!File.Exists(_LastEntries)) File.Create(_LastEntries).Dispose();
@@ -147,7 +147,7 @@ namespace WebChangeAlarm
             MailboxAddress from = new MailboxAddress(cfm.EmailFromName, cfm.EmailFromEmail);
             message.From.Add(from);
 
-            MailboxAddress to = new MailboxAddress("ddemcak@gmail.com");
+            MailboxAddress to = new MailboxAddress(cfm.EmailAdminEmail);
             message.To.Add(to);
 
             message.Subject = "[Novinky]: " + title.InnerText;
@@ -162,9 +162,10 @@ namespace WebChangeAlarm
             client.Connect(cfm.SmtpClientHost, cfm.SmtpClientPort, cfm.SmtpClientUseSsl);
             client.Authenticate(cfm.SmtpClientUsername, cfm.SmtpClientPassword);
 
+            // Send email notification to ADMIN
             client.Send(message);
 
-            // Send also for all recepients
+            // Send email for all recepients
             foreach (string recipient in recipients)
             {
                 message.To.Clear();

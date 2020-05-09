@@ -12,7 +12,8 @@ namespace WebChangeAlarm.Configurators
 
         public string WebsiteHomeUrl { get; set; }
         public string WebsiteUrl { get; set; }
-        public string EmailRecipents { get; set; }
+        public string EmailAdminEmail { get; set; }
+        public string EmailRecipentsSourceType { get; set; }
         public string EmailRecipentsSource { get; set; }
         public string EmailFromName { get; set; }
         public string EmailFromEmail { get; set; }
@@ -53,8 +54,11 @@ namespace WebChangeAlarm.Configurators
             iniFile.TryGet("Website:url", out value);
             WebsiteUrl = value;
 
-            iniFile.TryGet("Email:recipents", out value);
-            EmailRecipents = value;
+            iniFile.TryGet("Email:adminEmail", out value);
+            EmailAdminEmail = value;
+
+            iniFile.TryGet("Email:recipentsSourceType", out value);
+            EmailRecipentsSourceType = value;
 
             iniFile.TryGet("Email:recipentsSource", out value);
             EmailRecipentsSource = value;
