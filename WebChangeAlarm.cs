@@ -18,6 +18,7 @@ namespace WebChangeAlarm
         
         private const string _LastEntries = "recentPublishedEntries.txt";
         private const string _LastCheck = "lastCheck.txt";
+        private const string _LogFile = "logs.txt";
 
         #endregion
 
@@ -73,9 +74,9 @@ namespace WebChangeAlarm
             HtmlDocument doc = new HtmlDocument();
             doc.LoadHtml(content);
 
-            var titles = doc.DocumentNode.SelectNodes("//h2[contains(@class, 'art-postheader')]");
-            var datetimes = doc.DocumentNode.SelectNodes("//span[contains(@class, 'art-postdateicon')]");
-            var posts = doc.DocumentNode.SelectNodes("//div[contains(@class, 'art-article')]");
+            var titles = doc.DocumentNode.SelectNodes(cfm.WebsiteNodeTitle);
+            var datetimes = doc.DocumentNode.SelectNodes(cfm.WebsiteNodePublishedAt);
+            var posts = doc.DocumentNode.SelectNodes(cfm.WebsiteNodeMessageBody);
 
 
             if (titles.Count == datetimes.Count && datetimes.Count == posts.Count)
@@ -92,24 +93,29 @@ namespace WebChangeAlarm
             if (newArts.Count != 0)
             {
                 artManager.SaveLoggedArticles(publishedArticles);
-
+#if (!DEBUG)
                 foreach (Article newArt in newArts) SendEmail(newArt.HtmlTitle, newArt.HtmlPost);
+#endif
+                //Console.WriteLine(string.Format("{0} new article(s) found. Email(s) sent.", newArts.Count));
+                UpdateLog(string.Format("{0} new article(s) found. Email(s) sent.", newArts.Count));
+            }
 
-                Console.WriteLine(string.Format("{0} new article(s) found. Email(s) sent.", newArts.Count));
-                UpdateCheckedAt(string.Format("{0} new article(s) found. Email(s) sent.", newArts.Count));
-            }
-            else
-            {
-                Console.WriteLine("No new articles found.");
-                UpdateCheckedAt("No new articles found.");
-            }
+            UpdateLastCheck();
 
         }
 
 
-        private static void UpdateCheckedAt(string messageLog)
+        private static void UpdateLastCheck()
         {
-            using (StreamWriter sw = new StreamWriter(_LastCheck, true))
+            using (StreamWriter sw = new StreamWriter(_LastCheck))
+            {
+                sw.WriteLine(DateTime.Now + " - Last web site sucessfull check.");
+            }
+        }
+
+        private static void UpdateLog(string messageLog)
+        {
+            using (StreamWriter sw = new StreamWriter(_LogFile, true))
             {
                 sw.WriteLine(DateTime.Now + " - " + messageLog);
             }
@@ -147,8 +153,9 @@ namespace WebChangeAlarm
             MailboxAddress from = new MailboxAddress(cfm.EmailFromName, cfm.EmailFromEmail);
             message.From.Add(from);
 
+            // Add ADMIN email to Bcc in each client's email.
             MailboxAddress to = new MailboxAddress(cfm.EmailAdminEmail);
-            message.To.Add(to);
+            message.Bcc.Add(to);
 
             message.Subject = "[Novinky]: " + title.InnerText;
 
@@ -161,9 +168,6 @@ namespace WebChangeAlarm
             SmtpClient client = new SmtpClient();
             client.Connect(cfm.SmtpClientHost, cfm.SmtpClientPort, cfm.SmtpClientUseSsl);
             client.Authenticate(cfm.SmtpClientUsername, cfm.SmtpClientPassword);
-
-            // Send email notification to ADMIN
-            client.Send(message);
 
             // Send email for all recepients
             foreach (string recipient in recipients)

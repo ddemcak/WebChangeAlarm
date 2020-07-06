@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WebChangeAlarm": {
+      "commandName": "Project",
+      "commandLineArgs": "config.ini"
+    }
+  }
+}

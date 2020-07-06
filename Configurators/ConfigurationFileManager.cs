@@ -12,6 +12,9 @@ namespace WebChangeAlarm.Configurators
 
         public string WebsiteHomeUrl { get; set; }
         public string WebsiteUrl { get; set; }
+        public string WebsiteNodeTitle { get; set; }
+        public string WebsiteNodePublishedAt { get; set; }
+        public string WebsiteNodeMessageBody { get; set; }
         public string EmailAdminEmail { get; set; }
         public string EmailRecipentsSourceType { get; set; }
         public string EmailRecipentsSource { get; set; }
@@ -53,6 +56,15 @@ namespace WebChangeAlarm.Configurators
 
             iniFile.TryGet("Website:url", out value);
             WebsiteUrl = value;
+
+            iniFile.TryGet("Website:nodeTitle", out value);
+            WebsiteNodeTitle = value;
+
+            iniFile.TryGet("Website:nodePublishedAt", out value);
+            WebsiteNodePublishedAt = value;
+
+            iniFile.TryGet("Website:nodeMessageBody", out value);
+            WebsiteNodeMessageBody = value;
 
             iniFile.TryGet("Email:adminEmail", out value);
             EmailAdminEmail = value;
